@@ -13,21 +13,21 @@
 #define DEBOUNCE_MS     20            // Number of ms to debounce button
 #define COLOR_ORDER     GRB           // If colours look wrong, play with this
 #define CHIPSET         WS2812B       // LED strip type
-#define MAX_MILLIAMPS   500           // Careful with the amount of power here if running off USB port
-#define BRIGHTNESS      50            // Brightness 0 - 255, but won't exceed current specified above
+#define MAX_MILLIAMPS   2000          // Careful with the amount of power here if running off USB port
+#define BRIGHTNESS      100           // Brightness 0 - 255, but won't exceed current specified above
 #define LED_VOLTS       5             // Usually 5 or 12
-#define NUM_BANDS       16            // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
+#define NUM_BANDS       16             // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE           500           // Used as a crude noise filter, values below this are ignored
 
 const uint8_t kMatrixWidth = 16;                          // Matrix width
 const uint8_t kMatrixHeight = 16;                         // Matrix height
 #define NUM_LEDS       (kMatrixWidth * kMatrixHeight)     // Total number of LEDs
 #define BAR_WIDTH      (kMatrixWidth  / (NUM_BANDS - 1))  // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
-#define TOP            (kMatrixHeight - 1)                // Don't allowthe bars to go offscreen
+#define TOP            (kMatrixHeight - 0)                // Don't allow the bars to go offscreen
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
-byte peak[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};              // For more than 16 channels you must increase the size of these arrays
+byte peak[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};              // The length of these arrays must be >= NUM_BANDS
 int oldBarHeights[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int bandValues[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 double vReal[SAMPLES];
@@ -48,8 +48,22 @@ DEFINE_GRADIENT_PALETTE( outrun_gp ) {
   0, 141,   0, 100,   //purple
 127, 255, 192,   0,   //yellow
 255,   0,   5, 255 };  //blue
+DEFINE_GRADIENT_PALETTE( greenblue_gp ) {
+  0,   0, 255,  60,   //green
+ 64,   0, 236, 255,   //cyan
+128,   0,   5, 255,   //blue
+192,   0, 236, 255,   //cyan
+255,   0, 255,  60 }; //green
+DEFINE_GRADIENT_PALETTE( redyellow_gp ) {
+  0,   200, 200,  200,   //white
+ 64,   255, 218,    0,   //yellow
+128,   231,   0,    0,   //red
+192,   255, 218,    0,   //yellow
+255,   200, 200,  200 }; //white
 CRGBPalette16 purplePal = purple_gp;
 CRGBPalette16 outrunPal = outrun_gp;
+CRGBPalette16 greenbluePal = greenblue_gp;
+CRGBPalette16 heatPal = redyellow_gp;
 uint8_t colorTimer = 0;
 
 // XY code for serpentine matrix with input in top left
@@ -83,13 +97,13 @@ void setup() {
 
 void loop() {
 
-  FastLED.clear();
+  // Don't clear screen if waterfall pattern, be sure to change this is you change the patterns / order
+  if (buttonPushCounter != 5) FastLED.clear();
 
   // Read the button
   modeBtn.read();
   if (modeBtn.wasReleased()) {
-    buttonPushCounter = (buttonPushCounter + 1) % 4;
-    Serial.println("Button");
+    buttonPushCounter = (buttonPushCounter + 1) % 6;
   }
 
   // Reset bandValues[]
@@ -115,15 +129,15 @@ void loop() {
   for (int i = 2; i < (SAMPLES/2); i++){       // Don't use sample 0 and only first SAMPLES/2 are usable. Each array element represents a frequency bin and its value the amplitude.
     if (vReal[i] > NOISE) {                    // Add a crude noise filter
       
-    /*8 bands, 16kHz top band
+    /*8 bands, 12kHz top band
       if (i<=3 )           bandValues[0]  += (int)vReal[i];
-      if (i>3   && i<=7  ) bandValues[1]  += (int)vReal[i];
-      if (i>7   && i<=15 ) bandValues[2]  += (int)vReal[i];
-      if (i>15  && i<=31 ) bandValues[3]  += (int)vReal[i];
-      if (i>31  && i<=66 ) bandValues[4]  += (int)vReal[i];
-      if (i>66  && i<=141) bandValues[5]  += (int)vReal[i];
-      if (i>141 && i<=301) bandValues[6]  += (int)vReal[i];
-      if (i>301          ) bandValues[7]  += (int)vReal[i];*/
+      if (i>3   && i<=6  ) bandValues[1]  += (int)vReal[i];
+      if (i>6   && i<=13 ) bandValues[2]  += (int)vReal[i];
+      if (i>13  && i<=27 ) bandValues[3]  += (int)vReal[i];
+      if (i>27  && i<=55 ) bandValues[4]  += (int)vReal[i];
+      if (i>55  && i<=112) bandValues[5]  += (int)vReal[i];
+      if (i>112 && i<=229) bandValues[6]  += (int)vReal[i];
+      if (i>229          ) bandValues[7]  += (int)vReal[i];*/
 
     //16 bands, 12kHz top band
       if (i<=2 )           bandValues[0]  += (int)vReal[i];
@@ -166,13 +180,20 @@ void loop() {
         rainbowBars(band, barHeight);
         break;
       case 1:
-        purpleBars(band, barHeight);
-        break;
-      case 2:
         // No bars on this one
         break;
+      case 2:
+        purpleBars(band, barHeight);
+        break;
       case 3:
+        centerBars(band, barHeight);
+        break;
+      case 4:
         changingBars(band, barHeight);
+        break;
+      case 5:
+        waterfall(band);
+        break;
     }
 
     // Draw peaks
@@ -181,13 +202,19 @@ void loop() {
         whitePeak(band);
         break;
       case 1:
-        whitePeak(band);
+        outrunPeak(band);
         break;
       case 2:
-        rainbowPeak(band);
+        whitePeak(band);
         break;
       case 3:
-        // No peaks on this one
+        // No peaks
+        break;
+      case 4:
+        // No peaks
+        break;
+      case 5:
+        // No peaks
         break;
     }
 
@@ -210,7 +237,8 @@ void loop() {
   FastLED.show();
 }
 
-// PATTERNS BELOW
+// PATTERNS BELOW //
+
 void rainbowBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
@@ -238,6 +266,18 @@ void changingBars(int band, int barHeight) {
   }
 }
 
+void centerBars(int band, int barHeight) {
+  int xStart = BAR_WIDTH * band;
+  for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
+    if (barHeight % 2 == 0) barHeight--;
+    int yStart = ((kMatrixHeight - barHeight) / 2 );
+    for (int y = yStart; y <= (yStart + barHeight); y++) {
+      int colorIndex = constrain((y - yStart) * (255 / barHeight), 0, 255);
+      leds[XY(x,y)] = ColorFromPalette(heatPal, colorIndex);
+    }
+  }
+}
+
 void whitePeak(int band) {
   int xStart = BAR_WIDTH * band;
   int peakHeight = peak[band];
@@ -246,11 +286,30 @@ void whitePeak(int band) {
   }
 }
 
-void rainbowPeak(int band) {
+void outrunPeak(int band) {
   int xStart = BAR_WIDTH * band;
   int peakHeight = peak[band];
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
     //leds[XY(x,peakHeight)] = CHSV(peakHeight * (255 / kMatrixHeight), 255, 255);
     leds[XY(x,peakHeight)] = ColorFromPalette(outrunPal, peakHeight * (255 / kMatrixHeight));
+  }
+}
+
+void waterfall(int band) {
+  int xStart = BAR_WIDTH * band;
+  double highestBandValue = 60000;        // Set this to calibrate your waterfall
+
+  // Draw bottom line
+  for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
+    leds[XY(x,0)] = CHSV(constrain(map(bandValues[band],0,highestBandValue,160,0),0,160), 255, 255);
+  }
+
+  // Move screen up starting at 2nd row from top
+  if (band == NUM_BANDS - 1){
+    for (int y = kMatrixHeight - 2; y >= 0; y--) {
+      for (int x = 0; x < kMatrixWidth; x++) {
+        leds[XY(x,y+1)] = leds[XY(x,y)];
+      }
+    }
   }
 }
