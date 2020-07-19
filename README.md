@@ -3,7 +3,7 @@ A spectrum analyzer VU meter running a 40kHz FFT on an ESP32 and outputting to a
 ## Demo
 If you are planning on using this code, it is advisable to watch the YouTube video below explaining how it works.
 
-[![Youtube video of VU meter in action](http://img.youtube.com/vi/jhyUqx6inwI/0.jpg)](https://www.youtube.com/watch?v=jhyUqx6inwI)
+[![Youtube video of VU meter in action](http://img.youtube.com/vi/Mgh2WblO5_c/0.jpg)](https://www.youtube.com/watch?v=Mgh2WblO5_c)
 
 ## Setting up the circuit
 The matrix will run from both a line input or microphone, so choose whichever setup works for you.
