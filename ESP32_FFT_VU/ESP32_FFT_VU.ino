@@ -116,7 +116,7 @@ void loop() {
     newTime = micros();
     vReal[i] = analogRead(AUDIO_IN_PIN); // A conversion takes about 9.7uS on an ESP32
     vImag[i] = 0;
-    while (micros() < (newTime + sampling_period_us)) { /* chill */ }
+    while ((micros() - newTime) < sampling_period_us) { /* chill */ }
   }
 
   // Compute FFT
