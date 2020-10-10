@@ -6,7 +6,7 @@ If you are planning on using this code, it is advisable to watch the YouTube vid
 [![Youtube video of VU meter in action](http://img.youtube.com/vi/Mgh2WblO5_c/0.jpg)](https://www.youtube.com/watch?v=Mgh2WblO5_c)
 
 ## Setting up the circuit
-The matrix will run from both a line input or microphone, so choose whichever setup works for you.
+The matrix will run from both a line input or microphone, so choose whichever setup works for you. When choosing the pin for your button, be careful. Some pins on the ESP32 don't have pullup resistors, and if you choose one of these the button won't work! When I was testing, I found that D2 didn't work, but D4 did so I went with that one.
 
 ### Line in
 ![Circuit for using a line in](Linein_bb.png)
@@ -20,6 +20,6 @@ This is much simpler than the line in method, but you will be limited to the fre
 
 ## Installation and code usage
 1. Download this repository and open ESP32_FFT_VU.ino.
-2. You will need the FastLED and JC_Button libraries from the Arduino library manager. Youw will also need the arduinoFFT library. At the time of writing, the library manager version arduinoFFT has a bug which prevents `DCRemoval()` from working, so download it from the [GitHub repository](https://github.com/kosme/arduinoFFT) and install it from a zip file.
+2. You will need the FastLED and EasyButton libraries from the Arduino library manager. Youw will also need the arduinoFFT library. At the time of writing, the library manager version arduinoFFT has a bug which prevents `DCRemoval()` from working, so download it from the [GitHub repository](https://github.com/kosme/arduinoFFT) and install it from a zip file.
 3. Watch the video to see how to use it, you will need to customise it to your matrix and your needs.
 
