@@ -2,21 +2,21 @@
 
 #include <FastLED.h>
 #include <arduinoFFT.h>
-#include <JC_Button.h>
+#include <EasyButton.h>
 
 #define SAMPLES         1024          // Must be a power of 2
 #define SAMPLING_FREQ   40000         // Hz, must be 40000 or less due to ADC conversion time. Determines maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
 #define AMPLITUDE       1000          // Depending on your audio source level, you may need to alter this value. Can be used as a 'sensitivity' control.
 #define AUDIO_IN_PIN    35            // Signal in on this pin
 #define LED_PIN         5             // LED strip data
-#define BTN_PIN         2             // Connect a push button to this pin to change patterns
-#define DEBOUNCE_MS     20            // Number of ms to debounce button
+#define BTN_PIN         4             // Connect a push button to this pin to change patterns
+#define LONG_PRESS_MS   200           // Number of ms to count as a long press
 #define COLOR_ORDER     GRB           // If colours look wrong, play with this
 #define CHIPSET         WS2812B       // LED strip type
 #define MAX_MILLIAMPS   2000          // Careful with the amount of power here if running off USB port
 #define BRIGHTNESS      100           // Brightness 0 - 255, but won't exceed current specified above
 #define LED_VOLTS       5             // Usually 5 or 12
-#define NUM_BANDS       16             // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
+#define NUM_BANDS       16            // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE           500           // Used as a crude noise filter, values below this are ignored
 
 const uint8_t kMatrixWidth = 16;                          // Matrix width
@@ -37,7 +37,8 @@ arduinoFFT FFT = arduinoFFT(vReal, vImag, SAMPLES, SAMPLING_FREQ);
 
 // Button stuff
 int buttonPushCounter = 0;
-Button modeBtn(BTN_PIN, DEBOUNCE_MS);
+bool autoChangePatterns = false;
+EasyButton modeBtn(BTN_PIN);
 
 // FastLED stuff
 CRGB leds[NUM_LEDS];
@@ -91,8 +92,20 @@ void setup() {
   FastLED.clear();
 
   modeBtn.begin();
+  modeBtn.onPressed(changeMode);
+  modeBtn.onPressedFor(LONG_PRESS_MS, startAutoMode);
 
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQ));
+}
+
+void changeMode() {
+  Serial.println("Button pressed");
+  autoChangePatterns = false;
+  buttonPushCounter = (buttonPushCounter + 1) % 6;
+}
+
+void startAutoMode() {
+  autoChangePatterns = true;
 }
 
 void loop() {
@@ -100,11 +113,7 @@ void loop() {
   // Don't clear screen if waterfall pattern, be sure to change this is you change the patterns / order
   if (buttonPushCounter != 5) FastLED.clear();
 
-  // Read the button
   modeBtn.read();
-  if (modeBtn.wasReleased()) {
-    buttonPushCounter = (buttonPushCounter + 1) % 6;
-  }
 
   // Reset bandValues[]
   for (int i = 0; i<NUM_BANDS; i++){
@@ -232,6 +241,10 @@ void loop() {
   // Used in some of the patterns
   EVERY_N_MILLISECONDS(10) {
     colorTimer++;
+  }
+
+  EVERY_N_SECONDS(10) {
+    if (autoChangePatterns) buttonPushCounter = (buttonPushCounter + 1) % 6;
   }
   
   FastLED.show();
