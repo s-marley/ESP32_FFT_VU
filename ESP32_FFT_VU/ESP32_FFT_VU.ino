@@ -1,4 +1,5 @@
 // (Heavily) adapted from https://github.com/G6EJD/ESP32-8266-Audio-Spectrum-Display/blob/master/ESP32_Spectrum_Display_02.ino
+// Adjusted to allow brightness changes on press+hold, Auto-cycle for 3 button presses within 2 seconds
 
 #include <FastLED.h>
 #include <arduinoFFT.h>
@@ -14,7 +15,7 @@
 #define COLOR_ORDER     GRB           // If colours look wrong, play with this
 #define CHIPSET         WS2812B       // LED strip type
 #define MAX_MILLIAMPS   2000          // Careful with the amount of power here if running off USB port
-#define BRIGHTNESS      100           // Brightness 0 - 255, but won't exceed current specified above
+const int BRIGHTNESS_SETTINGS[3] = {5, 70, 200};  // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
 #define LED_VOLTS       5             // Usually 5 or 12
 #define NUM_BANDS       16            // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE           500           // Used as a crude noise filter, values below this are ignored
@@ -93,19 +94,32 @@ void setup() {
 
   modeBtn.begin();
   modeBtn.onPressed(changeMode);
-  modeBtn.onPressedFor(LONG_PRESS_MS, startAutoMode);
-
+  modeBtn.onPressedFor(LONG_PRESS_MS, brightnessButton);
+  modeBtn.onSequence(3, 2000, startAutoMode);
+  modeBtn.onSequence(5, 2000, brightnessOff);
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQ));
 }
 
 void changeMode() {
   Serial.println("Button pressed");
+  if (FastLED.getBrightness() == 0) FastLED.setBrightness(BRIGHTNESS_SETTINGS[0]);  //Re-enable if lights are "off"
   autoChangePatterns = false;
   buttonPushCounter = (buttonPushCounter + 1) % 6;
 }
 
 void startAutoMode() {
   autoChangePatterns = true;
+}
+
+void brightnessButton() {
+  if (FastLED.getBrightness() == BRIGHTNESS_SETTINGS[2])  FastLED.setBrightness(BRIGHTNESS_SETTINGS[0]);
+  else if (FastLED.getBrightness() == BRIGHTNESS_SETTINGS[0]) FastLED.setBrightness(BRIGHTNESS_SETTINGS[1]);
+  else if (FastLED.getBrightness() == BRIGHTNESS_SETTINGS[1]) FastLED.setBrightness(BRIGHTNESS_SETTINGS[2]);
+  else if (FastLED.getBrightness() == 0) FastLED.setBrightness(BRIGHTNESS_SETTINGS[0]); //Re-enable if lights are "off"
+}
+
+void brightnessOff(){
+  FastLED.setBrightness(0);  //Lights out
 }
 
 void loop() {
