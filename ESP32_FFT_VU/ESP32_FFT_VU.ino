@@ -79,7 +79,7 @@ uint16_t XY( uint8_t x, uint8_t y) {
     i = (y * kMatrixWidth) + reverseX;
   } else {
     // Even rows run forwards
-    i = (y * kMatrixHeight) + x;
+    i = (y * kMatrixWidth) + x;
   }
   return i;
 }
