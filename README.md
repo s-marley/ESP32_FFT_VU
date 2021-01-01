@@ -23,3 +23,9 @@ This is much simpler than the line in method, but you will be limited to the fre
 2. You will need the FastLED and EasyButton libraries from the Arduino library manager. Youw will also need the arduinoFFT library. At the time of writing, the library manager version arduinoFFT has a bug which prevents `DCRemoval()` from working, so download it from the [GitHub repository](https://github.com/kosme/arduinoFFT) and install it from a zip file.
 3. Watch the video to see how to use it, you will need to customise it to your matrix and your needs.
 
+## Controls
+The matrix is controlled from a single button. The functions are:
+- Single press: Change pattern
+- Long press: Change brightness
+- 3 button presses in 2 seconds: Set to auto-change pattern
+- 5 button presses in 2 seconds: Turn off display
