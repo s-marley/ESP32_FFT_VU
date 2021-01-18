@@ -19,7 +19,6 @@ const int BRIGHTNESS_SETTINGS[3] = {5, 70, 200};  // 3 Integer array for 3 brigh
 #define LED_VOLTS       5             // Usually 5 or 12
 #define NUM_BANDS       16            // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE           500           // Used as a crude noise filter, values below this are ignored
-
 const uint8_t kMatrixWidth = 16;                          // Matrix width
 const uint8_t kMatrixHeight = 16;                         // Matrix height
 #define NUM_LEDS       (kMatrixWidth * kMatrixHeight)     // Total number of LEDs
@@ -89,7 +88,7 @@ void setup() {
   Serial.begin(115200);
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalSMD5050);
   FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTS, MAX_MILLIAMPS);
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setBrightness(BRIGHTNESS_SETTINGS[1]);
   FastLED.clear();
 
   modeBtn.begin();
