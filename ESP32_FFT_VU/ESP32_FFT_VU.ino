@@ -24,7 +24,7 @@ const uint8_t kMatrixHeight = 16;                         // Matrix height
 #define NUM_LEDS       (kMatrixWidth * kMatrixHeight)     // Total number of LEDs
 #define BAR_WIDTH      (kMatrixWidth  / (NUM_BANDS - 1))  // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
 #define TOP            (kMatrixHeight - 0)                // Don't allow the bars to go offscreen
-#define ZIG_ZAG        true                               // Set to false if you're LEDS are connected end to end, true if serpentine
+#define SERPENTINE     true                               // Set to false if you're LEDS are connected end to end, true if serpentine
 
 // Sampling and FFT stuff
 unsigned int sampling_period_us;
@@ -74,7 +74,7 @@ uint16_t XY( uint8_t x, uint8_t y) {
   
   y = kMatrixHeight - 1 - y;  // Adjust y coordinate so (0,0) is bottom left
 
-  if(ZIG_ZAG) {
+  if(SERPENTINE) {
     if( y & 0x01) {
       // Odd rows run backwards
       uint8_t reverseX = (kMatrixWidth - 1) - x;
