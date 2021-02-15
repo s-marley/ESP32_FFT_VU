@@ -93,7 +93,7 @@ uint8_t colorTimer = 0;
 // FastLED_NeoMaxtrix - see https://github.com/marcmerlin/FastLED_NeoMatrix for Tiled Matrixes, Zig-Zag and so forth
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, kMatrixWidth, kMatrixHeight,
   NEO_MATRIX_TOP        + NEO_MATRIX_LEFT +
-  NEO_MATRIX_COLUMNS    + NEO_MATRIX_ZIGZAG +
+  NEO_MATRIX_ROWS       + NEO_MATRIX_ZIGZAG +
   NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
 void setup() {
@@ -280,7 +280,7 @@ void loop() {
 void rainbowBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    for (int y = 0; y < barHeight; y++) {
+    for (int y = TOP; y >= TOP - barHeight; y--) {
       matrix->drawPixel(x, y, CHSV((x / BAR_WIDTH) * (255 / NUM_BANDS), 255, 255));
     }
   }
@@ -289,8 +289,8 @@ void rainbowBars(int band, int barHeight) {
 void purpleBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    for (int y = 0; y < barHeight; y++) {
-      matrix->drawPixel(x, y, ColorFromPalette(purplePal, y * (255 / barHeight)));
+    for (int y = TOP; y >= TOP - barHeight; y--) {
+      matrix->drawPixel(x, y, ColorFromPalette(purplePal, y * (255 / (barHeight + 1))));
     }
   }
 }
@@ -298,7 +298,7 @@ void purpleBars(int band, int barHeight) {
 void changingBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    for (int y = 0; y < barHeight; y++) {
+    for (int y = TOP; y >= TOP - barHeight; y--) {
       matrix->drawPixel(x, y, CHSV(y * (255 / kMatrixHeight) + colorTimer, 255, 255));
     }
   }
@@ -318,15 +318,15 @@ void centerBars(int band, int barHeight) {
 
 void whitePeak(int band) {
   int xStart = BAR_WIDTH * band;
-  int peakHeight = peak[band];
+  int peakHeight = TOP - peak[band] - 1;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    matrix->drawPixel(x, peakHeight, CRGB(1,1,1));
+    matrix->drawPixel(x, peakHeight, CHSV(0,0,255));
   }
 }
 
 void outrunPeak(int band) {
   int xStart = BAR_WIDTH * band;
-  int peakHeight = peak[band];
+  int peakHeight = TOP - peak[band] - 1;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
     matrix->drawPixel(x, peakHeight, ColorFromPalette(outrunPal, peakHeight * (255 / kMatrixHeight)));
   }
