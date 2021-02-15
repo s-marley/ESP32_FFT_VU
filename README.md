@@ -1,5 +1,9 @@
 # ESP32_FFT_VU
 A spectrum analyzer VU meter running a 40kHz FFT on an ESP32 and outputting to a 16 x 16 FastLED matrix. The code is heavily modified from [this example](https://github.com/G6EJD/ESP32-8266-Audio-Spectrum-Display/blob/master/ESP32_Spectrum_Display_02.ino) originally written by G6EJD who has a very useful [YouTube channel](https://www.youtube.com/user/G6EJD/videos), so check him out.
+
+## Neomatrix compatibility
+If you're inerested in running this using Neomatrix for easier adjustment to different matrix setups, [VonHirsch](https://github.com/VonHirsch/ESP32_FFT_VU/tree/FastLED_NeoMatrix) has a fork that you might be interested in.
+
 ## Demo
 If you are planning on using this code, it is advisable to watch the YouTube video below explaining how it works.
 
