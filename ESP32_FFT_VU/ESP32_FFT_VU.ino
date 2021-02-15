@@ -1,7 +1,7 @@
 // (Heavily) adapted from https://github.com/G6EJD/ESP32-8266-Audio-Spectrum-Display/blob/master/ESP32_Spectrum_Display_02.ino
 // Adjusted to allow brightness changes on press+hold, Auto-cycle for 3 button presses within 2 seconds
 
-#include <FastLED.h>
+#include <FastLED_NeoMatrix.h>
 #include <arduinoFFT.h>
 #include <EasyButton.h>
 
@@ -68,10 +68,10 @@ CRGBPalette16 greenbluePal = greenblue_gp;
 CRGBPalette16 heatPal = redyellow_gp;
 uint8_t colorTimer = 0;
 
-// XY code for serpentine matrix with input in top left
-uint16_t XY( uint8_t x, uint8_t y) {
+// XY code for serpentine matrix with input in top left (depreciated)
+/*uint16_t XY( uint8_t x, uint8_t y) {
   uint16_t i;
-  
+
   y = kMatrixHeight - 1 - y;  // Adjust y coordinate so (0,0) is bottom left
 
   if(SERPENTINE) {
@@ -88,7 +88,13 @@ uint16_t XY( uint8_t x, uint8_t y) {
      i = (y * kMatrixWidth) + x;
   }
   return i;
-}
+}*/
+
+// FastLED_NeoMaxtrix - see https://github.com/marcmerlin/FastLED_NeoMatrix for Tiled Matrixes, Zig-Zag and so forth
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, kMatrixWidth, kMatrixHeight,
+  NEO_MATRIX_TOP        + NEO_MATRIX_LEFT +
+  NEO_MATRIX_COLUMNS    + NEO_MATRIX_ZIGZAG +
+  NEO_TILE_TOP + NEO_TILE_LEFT + NEO_TILE_ROWS);
 
 void setup() {
   Serial.begin(115200);
@@ -138,7 +144,7 @@ void loop() {
   for (int i = 0; i<NUM_BANDS; i++){
     bandValues[i] = 0;
   }
-  
+
   // Sample the audio pin
   for (int i = 0; i < SAMPLES; i++) {
     newTime = micros();
@@ -156,7 +162,7 @@ void loop() {
   // Analyse FFT results
   for (int i = 2; i < (SAMPLES/2); i++){       // Don't use sample 0 and only first SAMPLES/2 are usable. Each array element represents a frequency bin and its value the amplitude.
     if (vReal[i] > NOISE) {                    // Add a crude noise filter
-      
+
     /*8 bands, 12kHz top band
       if (i<=3 )           bandValues[0]  += (int)vReal[i];
       if (i>3   && i<=6  ) bandValues[1]  += (int)vReal[i];
@@ -189,7 +195,7 @@ void loop() {
 
   // Process the FFT data into bar heights
   for (byte band = 0; band < NUM_BANDS; band++) {
-    
+
     // Scale the bars for the display
     int barHeight = bandValues[band] / AMPLITUDE;
     if (barHeight > TOP) barHeight = TOP;
@@ -201,7 +207,7 @@ void loop() {
     if (barHeight > peak[band]) {
       peak[band] = min(TOP, barHeight);
     }
-    
+
     // Draw bars
     switch (buttonPushCounter) {
       case 0:
@@ -249,10 +255,10 @@ void loop() {
     // Save oldBarHeights for averaging later
     oldBarHeights[band] = barHeight;
   }
-  
+
   // Decay peak
   EVERY_N_MILLISECONDS(60) {
-    for (byte band = 0; band < NUM_BANDS; band++) 
+    for (byte band = 0; band < NUM_BANDS; band++)
       if (peak[band] > 0) peak[band] -= 1;
     colorTimer++;
   }
@@ -265,7 +271,7 @@ void loop() {
   EVERY_N_SECONDS(10) {
     if (autoChangePatterns) buttonPushCounter = (buttonPushCounter + 1) % 6;
   }
-  
+
   FastLED.show();
 }
 
@@ -275,7 +281,7 @@ void rainbowBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
     for (int y = 0; y < barHeight; y++) {
-      leds[XY(x,y)] = CHSV((x / BAR_WIDTH) * (255 / NUM_BANDS), 255, 255); 
+      matrix->drawPixel(x, y, CHSV((x / BAR_WIDTH) * (255 / NUM_BANDS), 255, 255));
     }
   }
 }
@@ -284,7 +290,7 @@ void purpleBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
     for (int y = 0; y < barHeight; y++) {
-      leds[XY(x,y)] = ColorFromPalette(purplePal, y * (255 / barHeight));
+      matrix->drawPixel(x, y, ColorFromPalette(purplePal, y * (255 / barHeight)));
     }
   }
 }
@@ -293,7 +299,7 @@ void changingBars(int band, int barHeight) {
   int xStart = BAR_WIDTH * band;
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
     for (int y = 0; y < barHeight; y++) {
-      leds[XY(x,y)] = CHSV(y * (255 / kMatrixHeight) + colorTimer, 255, 255); 
+      matrix->drawPixel(x, y, CHSV(y * (255 / kMatrixHeight) + colorTimer, 255, 255));
     }
   }
 }
@@ -305,7 +311,7 @@ void centerBars(int band, int barHeight) {
     int yStart = ((kMatrixHeight - barHeight) / 2 );
     for (int y = yStart; y <= (yStart + barHeight); y++) {
       int colorIndex = constrain((y - yStart) * (255 / barHeight), 0, 255);
-      leds[XY(x,y)] = ColorFromPalette(heatPal, colorIndex);
+      matrix->drawPixel(x, y, ColorFromPalette(heatPal, colorIndex));
     }
   }
 }
@@ -314,7 +320,7 @@ void whitePeak(int band) {
   int xStart = BAR_WIDTH * band;
   int peakHeight = peak[band];
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    leds[XY(x,peakHeight)] = CRGB::White;
+    matrix->drawPixel(x, peakHeight, CRGB(1,1,1));
   }
 }
 
@@ -322,8 +328,7 @@ void outrunPeak(int band) {
   int xStart = BAR_WIDTH * band;
   int peakHeight = peak[band];
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    //leds[XY(x,peakHeight)] = CHSV(peakHeight * (255 / kMatrixHeight), 255, 255);
-    leds[XY(x,peakHeight)] = ColorFromPalette(outrunPal, peakHeight * (255 / kMatrixHeight));
+    matrix->drawPixel(x, peakHeight, ColorFromPalette(outrunPal, peakHeight * (255 / kMatrixHeight)));
   }
 }
 
@@ -333,14 +338,16 @@ void waterfall(int band) {
 
   // Draw bottom line
   for (int x = xStart; x < xStart + BAR_WIDTH; x++) {
-    leds[XY(x,0)] = CHSV(constrain(map(bandValues[band],0,highestBandValue,160,0),0,160), 255, 255);
+    matrix->drawPixel(x, 0, CHSV(constrain(map(bandValues[band],0,highestBandValue,160,0),0,160), 255, 255));
   }
 
   // Move screen up starting at 2nd row from top
   if (band == NUM_BANDS - 1){
     for (int y = kMatrixHeight - 2; y >= 0; y--) {
       for (int x = 0; x < kMatrixWidth; x++) {
-        leds[XY(x,y+1)] = leds[XY(x,y)];
+        int pixelIndexY = matrix->XY(x, y + 1);
+        int pixelIndex = matrix->XY(x, y);
+        leds[pixelIndexY] = leds[pixelIndex];
       }
     }
   }
