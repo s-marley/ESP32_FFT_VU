@@ -1,5 +1,6 @@
 // (Heavily) adapted from https://github.com/G6EJD/ESP32-8266-Audio-Spectrum-Display/blob/master/ESP32_Spectrum_Display_02.ino
 // Adjusted to allow brightness changes on press+hold, Auto-cycle for 3 button presses within 2 seconds
+// Edited to add Neomatrix support for easier compatibility with different layouts.
 
 #include <FastLED_NeoMatrix.h>
 #include <arduinoFFT.h>
@@ -67,28 +68,6 @@ CRGBPalette16 outrunPal = outrun_gp;
 CRGBPalette16 greenbluePal = greenblue_gp;
 CRGBPalette16 heatPal = redyellow_gp;
 uint8_t colorTimer = 0;
-
-// XY code for serpentine matrix with input in top left (depreciated)
-/*uint16_t XY( uint8_t x, uint8_t y) {
-  uint16_t i;
-
-  y = kMatrixHeight - 1 - y;  // Adjust y coordinate so (0,0) is bottom left
-
-  if(SERPENTINE) {
-    if( y & 0x01) {
-      // Odd rows run backwards
-      uint8_t reverseX = (kMatrixWidth - 1) - x;
-      i = (y * kMatrixWidth) + reverseX;
-    } else {
-      // Even rows run forwards
-      i = (y * kMatrixWidth) + x;
-    }
-  }
-  else {
-     i = (y * kMatrixWidth) + x;
-  }
-  return i;
-}*/
 
 // FastLED_NeoMaxtrix - see https://github.com/marcmerlin/FastLED_NeoMatrix for Tiled Matrixes, Zig-Zag and so forth
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(leds, kMatrixWidth, kMatrixHeight,
