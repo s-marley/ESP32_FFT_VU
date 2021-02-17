@@ -1,7 +1,7 @@
 # ESP32_FFT_VU
 A spectrum analyzer VU meter running a 40kHz FFT on an ESP32 and outputting to a 16 x 16 FastLED matrix. The code is heavily modified from [this example](https://github.com/G6EJD/ESP32-8266-Audio-Spectrum-Display/blob/master/ESP32_Spectrum_Display_02.ino) originally written by G6EJD who has a very useful [YouTube channel](https://www.youtube.com/user/G6EJD/videos), so check him out.
 ## Demo
-If you are planning on using this code, it is advisable to watch the YouTube video below explaining how it works.
+If you are planning on using this code, it is advisable to watch the YouTube video below explaining how it works. Please note, the code has changed to use FastLED Neomatrix since the video was produced thanks to [VonHirsch](https://github.com/VonHirsch/). See 'Installation and code usage' below.
 
 [![Youtube video of VU meter in action](http://img.youtube.com/vi/Mgh2WblO5_c/0.jpg)](https://www.youtube.com/watch?v=Mgh2WblO5_c)
 
@@ -20,8 +20,9 @@ This is much simpler than the line in method, but you will be limited to the fre
 
 ## Installation and code usage
 1. Download this repository and open ESP32_FFT_VU.ino.
-2. You will need the FastLED and EasyButton libraries from the Arduino library manager. Youw will also need the arduinoFFT library. At the time of writing, the library manager version arduinoFFT has a bug which prevents `DCRemoval()` from working, so download it from the [GitHub repository](https://github.com/kosme/arduinoFFT) and install it from a zip file.
-3. Watch the video to see how to use it, you will need to customise it to your matrix and your needs.
+2. You will need the FastLED Neomatrix and EasyButton libraries from the Arduino library manager. Youw will also need the arduinoFFT library. At the time of writing, the library manager version arduinoFFT has a bug which prevents `DCRemoval()` from working, so download it from the [GitHub repository](https://github.com/kosme/arduinoFFT) and install it from a zip file.
+3. Watch the video to see how to use it.
+4. To customsise it to your own matrix layout, read about Neomatrix layouts at [Adafruit](https://learn.adafruit.com/adafruit-neopixel-uberguide/neomatrix-library#layouts-2894555-5).
 
 ## Controls
 The matrix is controlled from a single button. The functions are:
