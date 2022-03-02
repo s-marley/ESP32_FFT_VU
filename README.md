@@ -31,3 +31,6 @@ The matrix is controlled from a single button. The functions are:
 - Long press: Change brightness
 - 3 button presses in 2 seconds: Set to auto-change pattern
 - 5 button presses in 2 seconds: Turn off display
+
+## Licence
+Due to a [copyright claim](https://github.com/s-marley/ESP32_FFT_VU/issues/12) by G6EJD, the MIT license for this project has been withdrawn, and his licence now applies. This can be found in LICENCE.txt. As I would like this code to be MIT licenced going forward, any code that originated with G6EJD will be replaced at a future date and the information on this page updated to reflect this.
